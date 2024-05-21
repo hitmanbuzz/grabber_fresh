@@ -1,0 +1,10 @@
+[package]
+name = "grabber_fresh"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+reqwest = "0.12.4"
+tokio = { version = "1.37.0", features = ["full"] }
+futures = "0.3"
+regex = "1"
