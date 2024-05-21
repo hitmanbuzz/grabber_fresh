@@ -23,9 +23,6 @@ pub async fn fetch_comic_chapter(comic_url: String) -> Result<Vec<String>, Box<d
                 container.push(result);
             }
         }
-        else {
-            println!("target_string not found");
-        }
     }
 
     Ok(container)
@@ -50,9 +47,6 @@ pub async fn fetch_chapter_url(chapter_url: String) -> Result<Vec<String>, Box<d
             if previous_index[1].contains("/uploads") {
                 let result = format!("https://readm.today{}", previous_index[1]);
                 container.push(result)
-            }
-            else {
-                println!("/uploads not found");
             }
         }
     }

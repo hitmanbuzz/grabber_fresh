@@ -1,20 +1,16 @@
 mod source;
-
 use std::{collections::HashSet, fs, io, path::Path};
-
-use regex::Regex;
 use tokio::task;
 
 use crate::source::readm::{fetch_comic_chapter, fetch_chapter_url, fetch_comic_image};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let url = String::from("https://readm.today/manga/my-furry-harem-is-after-me/");
+    let url = String::from("https://readm.today/manga/18144");
     let title: Vec<&str> = url.split("/manga/").collect();
     let title = title[1];
-    let re_format = format!(r"/{}/(\d+)/", title);
-    let re = Regex::new(&re_format).unwrap();
     let mut response = fetch_comic_chapter(url.clone()).await.unwrap();
+    let mut file_format = ".jpg";
 
     response.reverse();
     let set: HashSet<_> = response.into_iter().collect();
@@ -26,28 +22,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         num_a.cmp(&num_b)
     });
 
-    println!("Sorted ALL URL: {:#?}", deduped_urls);
+    // println!("Sorted ALL URL: {:#?}", deduped_urls);
 
     let mut handles = vec![];
+    let sub_string = format!("/manga/{}/", title);
 
     for u in deduped_urls {
-        let r = fetch_chapter_url(u).await.unwrap();
+        println!("LVL 0 Reached");
+        let chapter_number: Vec<&str> = u.split(&sub_string).collect();
+        let chapter_number: Vec<&str> = chapter_number[1].split("/").collect();
+        let r = fetch_chapter_url(u.clone()).await.unwrap();
         for (index, url) in r.iter().enumerate() {
+            println!("LVL 0.5 Reached");
             let url = url.to_string();
-            if let Some(caps) = re.captures(&url) {
-                if let Some(matched) = caps.get(1) {
-                    println!("Chapter Number: {}", matched.as_str());
-                    let folder = format!("download\\{}\\chapter_{}", title, matched.as_str());
-                    let _ = fs::create_dir_all(folder);
-                    let path = format!("download\\{}\\chapter_{}\\image{}.jpg", title, matched.as_str(), index);
-                    let path = Path::new(&path).to_path_buf();
-                    let handle = task::spawn(async move {
-                        fetch_comic_image(&url, &path).await.unwrap();
-                    });
-                    handles.push(handle);
-                }
+            println!("Chapter Number: {}", chapter_number[0]);
+            let folder = format!("download\\{}\\chapter_{}", title, chapter_number[0]);
+            let _ = fs::create_dir_all(folder);
+            if !url.contains(".jpg") {
+                file_format = ".png";
             }
-            
+
+            println!("LVL 2 Reached");
+            let path = format!("download\\{}\\chapter_{}\\image{}{}", title, chapter_number[0], index, file_format);
+            let path = Path::new(&path).to_path_buf();
+            let handle = task::spawn(async move {
+            println!("LVL 3 Reached");
+                fetch_comic_image(&url, &path).await.unwrap();
+            });
+            handles.push(handle);
         }
     }
 
