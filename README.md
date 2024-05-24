@@ -21,3 +21,5 @@ Now type `cargo run`
 
 
 ###### Made by Moirangthem Henthoiba
+![image](https://github.com/hitmanbuzz/grabber_fresh/assets/111609721/98e2370a-e28c-4ae0-bdda-0d662b9bbe4a)
+![image](https://github.com/hitmanbuzz/grabber_fresh/assets/111609721/7b5579d6-725e-4c7f-875c-d9fcc9afd000)
