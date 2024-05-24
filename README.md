@@ -12,6 +12,9 @@ Grabber is a scrapper specially made for comics.
 - Save the chapter images to their respective chapter number folder
 - Concurrency Download Support
 
+## Note
+- Comick download chapters from end to start (reverse)
+
 
 ```sh
 Download Rust from https://www.rust-lang.org
