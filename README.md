@@ -4,6 +4,7 @@ Grabber is a scrapper specially made for comics.
 
 #### Support Site:
 - readm.today
+- comick.io
 
 ## Features
 
