@@ -5,6 +5,7 @@ use serde_json::Value;
 use serde::Deserialize;
 use tokio::task;
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct Chapter {
     chap: String,
@@ -15,6 +16,7 @@ struct Chapter {
     title: Option<Value>,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct Images {
     images: Vec<String>,
