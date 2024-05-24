@@ -1,10 +1,11 @@
+use std::thread::sleep;
+use std::time::Duration;
 use std::{fs::File, io::Write, path::Path, process::exit};
-use std::{collections::HashSet, fs, io};
+use std::{collections::HashSet, fs};
 use tokio::task;
-
-
 use reqwest::Client;
 
+/// Fetch comic chapters url
 async fn fetch_comic_chapter(comic_url: String) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let client = reqwest::Client::builder().build()?;
     let request = client.get(comic_url).send().await?;
@@ -31,6 +32,7 @@ async fn fetch_comic_chapter(comic_url: String) -> Result<Vec<String>, Box<dyn s
     Ok(container)
 }
 
+/// Fetch the comic each chapters images url available
 async fn fetch_chapter_url(chapter_url: String) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let client = reqwest::Client::builder().build()?;
     let request = client.get(chapter_url).send().await?;
@@ -57,6 +59,7 @@ async fn fetch_chapter_url(chapter_url: String) -> Result<Vec<String>, Box<dyn s
     Ok(container)
 }
 
+/// Download Images
 async fn fetch_comic_image(image_url: &str, path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let response = Client::new().get(image_url).send().await?.bytes().await?;
     let mut file = File::create(path)?;
@@ -64,10 +67,11 @@ async fn fetch_comic_image(image_url: &str, path: &Path) -> Result<(), Box<dyn s
     Ok(())
 }
 
+/// READM Function
 pub async fn readm(url: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let title: Vec<&str> = url.split("/manga/").collect();
-    let title = title[1];
-    let mut response = fetch_comic_chapter(url.to_owned()).await.unwrap();
+    let title_parts: Vec<&str> = url.split("/manga/").collect();
+    let title = title_parts[1].to_string(); // Ensure `title` is owned
+    let mut response = fetch_comic_chapter(url.to_owned()).await?;
     let file_format = ".jpg";
 
     response.reverse();
@@ -80,38 +84,49 @@ pub async fn readm(url: &str) -> Result<(), Box<dyn std::error::Error>> {
         num_a.cmp(&num_b)
     });
 
-    // println!("Sorted ALL URL: {:#?}", deduped_urls);
-
     let mut handles = vec![];
     let sub_string = format!("/manga/{}/", title);
+    let timer = Duration::from_millis(1000);
 
     for u in deduped_urls {
-        let chapter_number: Vec<&str> = u.split(&sub_string).collect();
-        let chapter_number: Vec<&str> = chapter_number[1].split("/").collect();
-        let r = fetch_chapter_url(u.clone()).await.unwrap();
+        let chapter_number_parts: Vec<&str> = u.split(&sub_string).collect();
+        let chapter_number_parts: Vec<&str> = chapter_number_parts[1].split('/').collect();
+        let chapter = chapter_number_parts[0].to_string(); // Ensure `chapter` is owned
+        let r = fetch_chapter_url(u.clone()).await?;
         for (index, url) in r.iter().enumerate() {
-            let url = url.to_string();
-            println!("Chapter Number: {}", chapter_number[0]);
-            let folder = format!("download\\{}\\chapter_{}", title, chapter_number[0]);
-            let _ = fs::create_dir_all(folder);
+            let url = url.to_string(); // Ensure `url` is owned
+            let folder = format!("download/{}\\chapter_{}", title, chapter);
+            if let Err(err) = fs::create_dir_all(&folder) {
+                eprintln!("Failed to create directory {}: {}", folder, err);
+                continue;
+            }
 
-            let path = format!("download\\{}\\chapter_{}\\image{}{}", title, chapter_number[0], index, file_format);
+            let path = format!("download/{}\\chapter_{}\\image{}{}", title, chapter, index, file_format);
             let path = Path::new(&path).to_path_buf();
+
+            // Clone necessary variables to move into async block
+            let chapter_clone = chapter.clone();
+            let path_clone = path.clone();
+            let url_clone = url.clone();
+            let timer_clone = timer.clone();
+
             let handle = task::spawn(async move {
-                fetch_comic_image(&url, &path).await.unwrap();
+                match fetch_comic_image(&url_clone, &path_clone).await {
+                    Ok(_) => {
+                        println!("[Chapter: {}| Image: {} ] Download Finished\n", chapter_clone, index);
+                    }
+                    Err(_) => {
+                        sleep(timer_clone);
+                    },
+                }
             });
             handles.push(handle);
         }
-        println!("\n");
     }
 
     for handle in handles {
         handle.await?;
     }
-
-    println!("Done!!!");
-    let mut str = String::new();
-    io::stdin().read_line(&mut str).expect("failed to read str");
 
     Ok(())
 }
