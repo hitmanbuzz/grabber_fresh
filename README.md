@@ -13,6 +13,7 @@ Grabber is a scrapper specially made for comics.
 - Concurrency Download Support
 
 ## Note
+- Create a new folder `download` in the current directory of the project to saved the download images
 - Comick download chapters from end to start (reverse)
 
 
