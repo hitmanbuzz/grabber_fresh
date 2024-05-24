@@ -94,9 +94,6 @@ pub async fn readm(url: &str) -> Result<(), Box<dyn std::error::Error>> {
             println!("Chapter Number: {}", chapter_number[0]);
             let folder = format!("download\\{}\\chapter_{}", title, chapter_number[0]);
             let _ = fs::create_dir_all(folder);
-            if !url.contains(".jpg") {
-                file_format = ".png";
-            }
 
             let path = format!("download\\{}\\chapter_{}\\image{}{}", title, chapter_number[0], index, file_format);
             let path = Path::new(&path).to_path_buf();
