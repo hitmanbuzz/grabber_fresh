@@ -68,7 +68,6 @@ pub async fn readm(url: &str) -> Result<(), Box<dyn std::error::Error>> {
     let title: Vec<&str> = url.split("/manga/").collect();
     let title = title[1];
     let mut response = fetch_comic_chapter(url.to_owned()).await.unwrap();
-    let mut file_format = ".jpg";
 
     response.reverse();
     let set: HashSet<_> = response.into_iter().collect();
