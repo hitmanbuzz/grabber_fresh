@@ -1,16 +1,18 @@
 mod source;
 use std::io::{self, stdout, Write};
 
-use crate::source::readm::readm;
 use crate::source::comick::comick;
+use crate::source::readm::readm;
 
 #[tokio::main]
 async fn main() {
     println!("Grabber Made By Hitman|Moirangthem Henthoiba\n");
-    print!("[1] Readm.today
+    print!(
+        "[1] Readm.today
 [2] Comick.io
 
-[#] Choose: ");
+[#] Choose: "
+    );
     stdout().flush().unwrap();
     let mut option = String::new();
     io::stdin().read_line(&mut option).unwrap();
@@ -23,9 +25,7 @@ async fn main() {
         let readm_url = readm_url.trim();
         readm(readm_url).await.unwrap();
         println!("Download Finished");
-    }
-
-    else if option == "2" {
+    } else if option == "2" {
         print!("\nEnter URL: ");
         stdout().flush().unwrap();
         let mut comick_url = String::new();
@@ -33,16 +33,15 @@ async fn main() {
         let comick_url = comick_url.trim();
         comick(comick_url.to_string()).await;
         println!("Download Finished");
-    }
-
-    else {
+    } else {
         println!("Wrong Option");
     }
 
     println!("Press any key to exit...");
     io::stdout().flush().expect("Failed to flush stdout");
     let mut buffer = String::new();
-    io::stdin().read_line(&mut buffer).expect("Failed to read line");
+    io::stdin()
+        .read_line(&mut buffer)
+        .expect("Failed to read line");
     println!("You pressed: {}", buffer.trim());
-
 }
