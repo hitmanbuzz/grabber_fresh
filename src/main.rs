@@ -1,6 +1,7 @@
 mod source;
 use std::io::{self, stdout, Write};
 
+use crate::source::asura::asura;
 use crate::source::comick::comick;
 use crate::source::readm::readm;
 
@@ -10,6 +11,7 @@ async fn main() {
     print!(
         "[1] Readm.today
 [2] Comick.io
+[3] AsuraScans
 
 [#] Choose: "
     );
@@ -33,6 +35,9 @@ async fn main() {
         let comick_url = comick_url.trim();
         comick(comick_url.to_string()).await;
         println!("Download Finished");
+    } else if option == "3" {
+        asura().await.unwrap();
+        println!("Download finished");
     } else {
         println!("Wrong Option");
     }

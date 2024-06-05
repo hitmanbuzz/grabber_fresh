@@ -13,15 +13,16 @@ use tokio::task;
 pub async fn asura() -> Result<(), Box<dyn std::error::Error>> {
     let mut handles = vec![];
     let url = String::from("https://asuratoon.com/manga/my-exclusive-tower-guide/");
-    let title: Vec<&str> = url.split("manga/").collect();
+    let second_url = url.clone();
+    let title: Vec<&str> = second_url.split("manga/").collect();
     // Title = title[0]
     let title: Vec<&str> = title[1].split("/").collect();
-    let chapter_url = fetch_chapter(url.clone()).await?;
+    let chapter_url = fetch_chapter(url).await?;
     let timer = Duration::from_millis(1000);
-    for u in chapter_url {
-        let r = fetch_image(u.clone()).await?;
+    for uri in chapter_url {
+        let r = fetch_image(uri.clone()).await?;
         for (i, j) in r.iter().enumerate() {
-            let chapter: Vec<&str> = u.clone().split("chapter-").collect();
+            let chapter: Vec<&str> = uri.split("chapter-").collect();
             // Chapter = chapter[0]
             let chapter: Vec<&str> = chapter[1].split("/").collect();
             let dir = format!("download/{}/chapter_{}", title[0], chapter[0]);
@@ -35,27 +36,35 @@ pub async fn asura() -> Result<(), Box<dyn std::error::Error>> {
                 title[0], chapter[0], i
             );
             let path = Path::new(&path).to_path_buf();
+            let image_url = j.clone();
+            let chapter_number = chapter[0].to_string();
+            let timer = timer.clone();
 
             let handle = task::spawn(async move {
-                match fetch_comic_image(&j.as_str(), &path).await {
+                match fetch_comic_image(&image_url, &path).await {
                     Ok(_) => {
                         println!(
                             "[Chapter: {}| Image: {} ] Download Finished\n",
-                            chapter[0], i
+                            chapter_number, i
                         );
+                        sleep(timer);
                     }
                     Err(_) => {
-                        sleep(timer);
+                        println!("Error fetching chapters");
                     }
                 }
             });
             handles.push(handle);
         }
     }
+    for handle in handles {
+        handle.await?;
+    }
+
     Ok(())
 }
 
-pub async fn fetch_image(comic_url: String) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+async fn fetch_image(comic_url: String) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let mut container = Vec::new();
     let client = reqwest::Client::builder().build()?;
     let request = client.get(comic_url).send().await?;
