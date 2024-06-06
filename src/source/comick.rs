@@ -1,8 +1,14 @@
 use core::time;
-use std::{fs::{self, File}, io::{Read, Write}, path::Path, process::exit, thread::sleep};
 use reqwest::Client;
-use serde_json::Value;
 use serde::Deserialize;
+use serde_json::Value;
+use std::{
+    fs::{self, File},
+    io::{Read, Write},
+    path::Path,
+    process::exit,
+    thread::sleep,
+};
 use tokio::task;
 
 #[allow(dead_code)]
@@ -25,11 +31,15 @@ struct Images {
 
 pub async fn fetch_chapter1(comic_url: String) -> Result<String, Box<dyn std::error::Error>> {
     let first_substring = "firstChap";
-    let client = reqwest::Client::builder().default_headers({
-        let mut headers = reqwest::header::HeaderMap::new();
-        headers.insert(reqwest::header::USER_AGENT, "PostmanRuntime/7.38.0".parse().unwrap());
-        headers
-    })
+    let client = reqwest::Client::builder()
+        .default_headers({
+            let mut headers = reqwest::header::HeaderMap::new();
+            headers.insert(
+                reqwest::header::USER_AGENT,
+                "PostmanRuntime/7.38.0".parse().unwrap(),
+            );
+            headers
+        })
         .build()?;
     let request = client.get(comic_url).send().await?;
     if !request.status().is_success() {
@@ -64,11 +74,15 @@ pub async fn fetch_chapter1(comic_url: String) -> Result<String, Box<dyn std::er
 }
 
 pub async fn extract_data(chapter1_url: String) -> Result<(), Box<dyn std::error::Error>> {
-    let client = reqwest::Client::builder().default_headers({
-        let mut headers = reqwest::header::HeaderMap::new();
-        headers.insert(reqwest::header::USER_AGENT, "PostmanRuntime/7.38.0".parse().unwrap());
-        headers
-    })
+    let client = reqwest::Client::builder()
+        .default_headers({
+            let mut headers = reqwest::header::HeaderMap::new();
+            headers.insert(
+                reqwest::header::USER_AGENT,
+                "PostmanRuntime/7.38.0".parse().unwrap(),
+            );
+            headers
+        })
         .build()?;
     let target = "chapters\":[";
     let request = client.get(chapter1_url).send().await?;
@@ -88,7 +102,6 @@ pub async fn extract_data(chapter1_url: String) -> Result<(), Box<dyn std::error
     }
 
     Ok(())
-    
 }
 async fn fetch_comic_image(image_url: &str, path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let response = Client::new().get(image_url).send().await?.bytes().await?;
@@ -116,12 +129,15 @@ pub async fn fetch_comic_chapter(comic_title: &str) -> Result<(), Box<dyn std::e
     // Deserialize the JSON data
     let chapters: Vec<Chapter> = serde_json::from_str(&json_data).unwrap();
 
-    let mut handles = vec![];
+    // let mut handles = vec![];
     let file_format = ".jpg";
     let timer = time::Duration::from_millis(1000);
     // Access the `chap` and `hid` values
     for chapter in chapters {
-        let url = format!("https://api.comick.io/v1.0/chapter/{}/download", chapter.hid.trim());
+        let url = format!(
+            "https://api.comick.io/v1.0/chapter/{}/download",
+            chapter.hid.trim()
+        );
         let result = client.get(url).send().await?;
         if !result.status().is_success() {
             println!("{}", result.status());
@@ -134,29 +150,34 @@ pub async fn fetch_comic_chapter(comic_title: &str) -> Result<(), Box<dyn std::e
             let chapter = chapter.chap.clone();
             let folder = format!("download\\{}\\chapter_{}", comic_title, chapter);
             let _ = fs::create_dir_all(folder);
-            let path = format!("download\\{}\\chapter_{}\\image{}{}", comic_title, chapter, index, file_format);
+            let path = format!(
+                "download\\{}\\chapter_{}\\image{}{}",
+                comic_title, chapter, index, file_format
+            );
             let path = Path::new(&path).to_path_buf();
             let image_url = format!("https://meo3.comick.pictures/{}", image);
-            let handle = task::spawn(async move {
+            let _ = task::spawn(async move {
                 match fetch_comic_image(&image_url, &path).await {
                     Ok(_) => {
-                        println!("[Chapter: {} | Image: {}] Download Finished\n", chapter, index);
+                        println!(
+                            "[Chapter: {} | Image: {}] Download Finished\n",
+                            chapter, index
+                        );
                     }
                     Err(_) => {
                         sleep(timer);
-                    },
+                    }
                 }
             });
-            handles.push(handle);
-            
+            // handles.push(handle);
         }
     }
-    
-    for handle in handles {
-        handle.await?;
-    }
 
-    println!("Done!!!");
+    // for handle in handles {
+    //     handle.await?;
+    // }
+
+    println!("\nDone!!!");
 
     Ok(())
 }
@@ -164,7 +185,11 @@ pub async fn fetch_comic_chapter(comic_title: &str) -> Result<(), Box<dyn std::e
 pub async fn comick(comic_url: String) {
     let comic_title: &Vec<&str> = &comic_url.split("comic/").collect();
     let comic_title = comic_title[1];
-    let chapter1_url = format!("{}/{}-chapter-1-en", &comic_url, fetch_chapter1(comic_url.clone()).await.unwrap());
+    let chapter1_url = format!(
+        "{}/{}-chapter-1-en",
+        &comic_url,
+        fetch_chapter1(comic_url.clone()).await.unwrap()
+    );
     extract_data(chapter1_url).await.unwrap();
     fetch_comic_chapter(comic_title).await.unwrap();
 }

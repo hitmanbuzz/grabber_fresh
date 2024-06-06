@@ -10,15 +10,14 @@ use std::{
 };
 use tokio::task;
 
-pub async fn asura() -> Result<(), Box<dyn std::error::Error>> {
-    let mut handles = vec![];
-    let url = String::from("https://asuratoon.com/manga/my-exclusive-tower-guide/");
+pub async fn asura(url: String) -> Result<(), Box<dyn std::error::Error>> {
+    // let mut handles = vec![];
     let second_url = url.clone();
     let title: Vec<&str> = second_url.split("manga/").collect();
     // Title = title[0]
     let title: Vec<&str> = title[1].split("/").collect();
     let chapter_url = fetch_chapter(url).await?;
-    let timer = Duration::from_millis(1000);
+    let timer = Duration::from_secs(3);
     for uri in chapter_url {
         let r = fetch_image(uri.clone()).await?;
         for (i, j) in r.iter().enumerate() {
@@ -40,7 +39,7 @@ pub async fn asura() -> Result<(), Box<dyn std::error::Error>> {
             let chapter_number = chapter[0].to_string();
             let timer = timer.clone();
 
-            let handle = task::spawn(async move {
+            let _ = task::spawn(async move {
                 match fetch_comic_image(&image_url, &path).await {
                     Ok(_) => {
                         println!(
@@ -50,16 +49,17 @@ pub async fn asura() -> Result<(), Box<dyn std::error::Error>> {
                         sleep(timer);
                     }
                     Err(_) => {
-                        println!("Error fetching chapters");
+                        println!("Error fetching chapters\n");
                     }
                 }
             });
-            handles.push(handle);
+            // handles.push(handle);
         }
     }
-    for handle in handles {
-        handle.await?;
-    }
+    // for handle in handles {
+    //     handle.await?;
+    // }
+    println!("\nDone!!!l");
 
     Ok(())
 }

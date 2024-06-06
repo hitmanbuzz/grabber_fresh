@@ -26,7 +26,6 @@ async fn main() {
         io::stdin().read_line(&mut readm_url).unwrap();
         let readm_url = readm_url.trim();
         readm(readm_url).await.unwrap();
-        println!("Download Finished");
     } else if option == "2" {
         print!("\nEnter URL: ");
         stdout().flush().unwrap();
@@ -34,15 +33,17 @@ async fn main() {
         io::stdin().read_line(&mut comick_url).unwrap();
         let comick_url = comick_url.trim();
         comick(comick_url.to_string()).await;
-        println!("Download Finished");
     } else if option == "3" {
-        asura().await.unwrap();
-        println!("Download finished");
+        print!("\nEnter URL: ");
+        stdout().flush().unwrap();
+        let mut asura_url = String::new();
+        io::stdin().read_line(&mut asura_url).unwrap();
+        asura(asura_url).await.unwrap();
     } else {
         println!("Wrong Option");
     }
 
-    println!("Press any key to exit...");
+    println!("\nPress any key to exit...");
     io::stdout().flush().expect("Failed to flush stdout");
     let mut buffer = String::new();
     io::stdin()
