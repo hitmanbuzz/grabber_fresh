@@ -43,6 +43,7 @@ async fn main() {
         println!("Wrong Option");
     }
 
+    println!("\nFinished Downloading");
     println!("\nPress any key to exit...");
     io::stdout().flush().expect("Failed to flush stdout");
     let mut buffer = String::new();

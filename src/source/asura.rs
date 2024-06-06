@@ -59,7 +59,6 @@ pub async fn asura(url: String) -> Result<(), Box<dyn std::error::Error>> {
     // for handle in handles {
     //     handle.await?;
     // }
-    println!("\nDone!!!l");
 
     Ok(())
 }

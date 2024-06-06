@@ -143,7 +143,6 @@ pub async fn readm(url: &str) -> Result<(), Box<dyn std::error::Error>> {
     // for handle in handles {
     //     handle.await?;
     // }
-    println!("\nDone!!!");
 
     Ok(())
 }

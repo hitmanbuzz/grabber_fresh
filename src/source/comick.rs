@@ -177,8 +177,6 @@ pub async fn fetch_comic_chapter(comic_title: &str) -> Result<(), Box<dyn std::e
     //     handle.await?;
     // }
 
-    println!("\nDone!!!");
-
     Ok(())
 }
 
