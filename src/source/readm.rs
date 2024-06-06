@@ -1,9 +1,9 @@
+use reqwest::Client;
 use std::thread::sleep;
 use std::time::Duration;
-use std::{fs::File, io::Write, path::Path, process::exit};
 use std::{collections::HashSet, fs};
+use std::{fs::File, io::Write, path::Path, process::exit};
 use tokio::task;
-use reqwest::Client;
 
 /// Fetch comic chapters url
 async fn fetch_comic_chapter(comic_url: String) -> Result<Vec<String>, Box<dyn std::error::Error>> {
@@ -79,12 +79,22 @@ pub async fn readm(url: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut deduped_urls: Vec<_> = set.into_iter().collect();
 
     deduped_urls.sort_by(|a, b| {
-        let num_a = a.split('/').nth(5).unwrap_or("0").parse::<usize>().unwrap_or(0);
-        let num_b = b.split('/').nth(5).unwrap_or("0").parse::<usize>().unwrap_or(0);
+        let num_a = a
+            .split('/')
+            .nth(5)
+            .unwrap_or("0")
+            .parse::<usize>()
+            .unwrap_or(0);
+        let num_b = b
+            .split('/')
+            .nth(5)
+            .unwrap_or("0")
+            .parse::<usize>()
+            .unwrap_or(0);
         num_a.cmp(&num_b)
     });
 
-    let mut handles = vec![];
+    // let mut handles = vec![];
     let sub_string = format!("/manga/{}/", title);
     let timer = Duration::from_millis(1000);
 
@@ -101,7 +111,10 @@ pub async fn readm(url: &str) -> Result<(), Box<dyn std::error::Error>> {
                 continue;
             }
 
-            let path = format!("download/{}\\chapter_{}\\image{}{}", title, chapter, index, file_format);
+            let path = format!(
+                "download/{}\\chapter_{}\\image{}{}",
+                title, chapter, index, file_format
+            );
             let path = Path::new(&path).to_path_buf();
 
             // Clone necessary variables to move into async block
@@ -110,23 +123,26 @@ pub async fn readm(url: &str) -> Result<(), Box<dyn std::error::Error>> {
             let url_clone = url.clone();
             let timer_clone = timer.clone();
 
-            let handle = task::spawn(async move {
+            let _ = task::spawn(async move {
                 match fetch_comic_image(&url_clone, &path_clone).await {
                     Ok(_) => {
-                        println!("[Chapter: {}| Image: {} ] Download Finished\n", chapter_clone, index);
+                        println!(
+                            "[Chapter: {}| Image: {} ] Download Finished\n",
+                            chapter_clone, index
+                        );
                     }
                     Err(_) => {
                         sleep(timer_clone);
-                    },
+                    }
                 }
             });
-            handles.push(handle);
+            // handles.push(handle);
         }
     }
 
-    for handle in handles {
-        handle.await?;
-    }
+    // for handle in handles {
+    //     handle.await?;
+    // }
 
     Ok(())
 }
