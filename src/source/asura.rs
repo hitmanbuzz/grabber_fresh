@@ -24,14 +24,14 @@ pub async fn asura(url: String) -> Result<(), Box<dyn std::error::Error>> {
             let chapter: Vec<&str> = uri.split("chapter-").collect();
             // Chapter = chapter[0]
             let chapter: Vec<&str> = chapter[1].split("/").collect();
-            let dir = format!("download/{}/chapter_{}", title[0], chapter[0]);
+            let dir = format!("download\\{}\\chapter_{}", title[0], chapter[0]);
             if let Err(err) = fs::create_dir_all(&dir) {
                 eprintln!("Failed to create directory {}: {}", dir, err);
                 continue;
             }
 
             let path = format!(
-                "download/{}/chapter_{}/image{}.jpg",
+                "download\\{}\\chapter_{}\\image{}.jpg",
                 title[0], chapter[0], i
             );
             let path = Path::new(&path).to_path_buf();
