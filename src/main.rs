@@ -45,7 +45,6 @@ async fn main() {
 
     println!("\nFinished Downloading");
     println!("\nPress any key to exit...");
-    io::stdout().flush().expect("Failed to flush stdout");
     let mut buffer = String::new();
     io::stdin()
         .read_line(&mut buffer)
