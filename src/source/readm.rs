@@ -36,7 +36,6 @@ async fn fetch_comic_chapter(comic_url: String) -> Result<Vec<String>, Box<dyn s
 async fn fetch_chapter_url(chapter_url: String) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let client = reqwest::Client::builder().build()?;
     let request = client.get(chapter_url).send().await?;
-    let target_string = "?v=12";
     let mut container = Vec::new();
 
     if !request.status().is_success() {
@@ -46,13 +45,12 @@ async fn fetch_chapter_url(chapter_url: String) -> Result<Vec<String>, Box<dyn s
 
     let response = request.text().await?;
     for i in response.lines() {
-        if i.contains(target_string) {
-            let sub_string: Vec<&str> = i.split(target_string).collect();
-            let previous_index: Vec<&str> = sub_string[0].split('"').collect();
-            if previous_index[1].contains("/uploads") {
-                let result = format!("https://readm.today{}", previous_index[1]);
-                container.push(result)
-            }
+        if i.contains("uploads/") {
+            let next_string: Vec<&str> = i.split("uploads/").collect();
+            let next_string: Vec<&str> = next_string[1].split('"').collect();
+            let next_string = next_string[0];
+            let result = format!("https://readm.today/uploads/{}", next_string);
+            container.push(result)
         }
     }
 
