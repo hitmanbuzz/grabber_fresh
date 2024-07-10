@@ -5,7 +5,7 @@ Grabber is a scrapper specially made for comics.
 #### Support Site:
 - readm.today (NOT WORKING)
 - comick.io
-- asuratoon.com (Asura Scans) (NOT WORKING)
+- asuratoon.com (Asura Scans)
 
 ## Features
 
